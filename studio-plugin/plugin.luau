@@ -2336,11 +2336,12 @@ handlers.setScriptSource = function(requestData)
 	end
 
 	-- Try UpdateSourceAsync first (works with open script editors)
+	local sourceToSet = newSource :: string
 	local updateSuccess, updateResult = pcall(function()
 		local oldSourceLength = string.len(instance.Source)
 
 		ScriptEditorService:UpdateSourceAsync(instance, function(oldContent)
-			return newSource
+			return sourceToSet
 		end)
 
 		ChangeHistoryService:SetWaypoint("Set script source: " .. instance.Name)
@@ -2349,7 +2350,7 @@ handlers.setScriptSource = function(requestData)
 			success = true,
 			instancePath = instancePath,
 			oldSourceLength = oldSourceLength,
-			newSourceLength = string.len(newSource),
+			newSourceLength = string.len(sourceToSet),
 			method = "UpdateSourceAsync",
 			message = "Script source updated successfully (editor-safe)"
 		}
@@ -2362,7 +2363,7 @@ handlers.setScriptSource = function(requestData)
 	-- Fallback to direct assignment if UpdateSourceAsync fails
 	local directSuccess, directResult = pcall(function()
 		local oldSource = instance.Source
-		instance.Source = newSource
+		instance.Source = sourceToSet
 
 		ChangeHistoryService:SetWaypoint("Set script source: " .. instance.Name)
 
@@ -2370,7 +2371,7 @@ handlers.setScriptSource = function(requestData)
 			success = true,
 			instancePath = instancePath,
 			oldSourceLength = string.len(oldSource),
-			newSourceLength = string.len(newSource),
+			newSourceLength = string.len(sourceToSet),
 			method = "direct",
 			message = "Script source updated successfully (direct assignment)"
 		}
@@ -2393,7 +2394,7 @@ handlers.setScriptSource = function(requestData)
 
 		local newScript = Instance.new(className)
 		newScript.Name = name
-		newScript.Source = newSource
+		newScript.Source = sourceToSet
 		if wasBaseScript then
 			newScript.Enabled = enabled
 		end
