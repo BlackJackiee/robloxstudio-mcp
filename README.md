@@ -28,6 +28,11 @@ claude mcp add robloxstudio -- npx -y robloxstudio-mcp
 }
 ```
 
+**Install NPM Package**
+```bash
+npm i robloxstudio-mcp
+```
+
 <details>
 <summary>Note for native Windows users</summary>
 If you encounter issues, you may need to run it through `cmd`. Update your configuration like this:
