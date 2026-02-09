@@ -994,12 +994,29 @@ class RobloxStudioMCPServer {
     const port = process.env.ROBLOX_STUDIO_PORT ? parseInt(process.env.ROBLOX_STUDIO_PORT) : 3002;
     const host = process.env.ROBLOX_STUDIO_HOST || '0.0.0.0';
     const httpServer = createHttpServer(this.tools, this.bridge);
-    
+
+    // Start HTTP server with EADDRINUSE retry logic
     await new Promise<void>((resolve) => {
-      httpServer.listen(port, host, () => {
-        console.error(`HTTP server listening on ${host}:${port} for Studio plugin`);
-        resolve();
-      });
+      const tryListen = () => {
+        const server = httpServer.listen(port, host);
+
+        server.on('listening', () => {
+          console.error(`HTTP server listening on ${host}:${port} for Studio plugin`);
+          resolve();
+        });
+
+        server.on('error', (err: any) => {
+          if (err.code === 'EADDRINUSE') {
+            console.error(`Port ${port} in use, retrying in 2 seconds...`);
+            setTimeout(tryListen, 2000); // Retry after 2 seconds
+          } else {
+            // For other errors, throw them
+            throw err;
+          }
+        });
+      };
+
+      tryListen();
     });
 
     const transport = new StdioServerTransport();
