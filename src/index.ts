@@ -996,7 +996,7 @@ class RobloxStudioMCPServer {
     const httpServer = createHttpServer(this.tools, this.bridge);
 
     // Start HTTP server with EADDRINUSE retry logic
-    await new Promise<void>((resolve) => {
+    await new Promise<void>((resolve, reject) => {
       const tryListen = () => {
         const server = httpServer.listen(port, host);
 
@@ -1010,8 +1010,9 @@ class RobloxStudioMCPServer {
             console.error(`Port ${port} in use, retrying in 2 seconds...`);
             setTimeout(tryListen, 2000); // Retry after 2 seconds
           } else {
-            // For other errors, throw them
-            throw err;
+            // For other errors, properly reject the promise
+            console.error(`Failed to start HTTP server: ${err.message}`);
+            reject(err);
           }
         });
       };
